@@ -18,19 +18,14 @@
 #include "Camera/CameraShakeBase.h"
 #include "H_CoreTypes.h"
 
-
-
-
 AClass_Character::AClass_Character(const FObjectInitializer& ObjInit)
 	: Super(ObjInit.SetDefaultSubobjectClass<UClass_CharacterMovementComponent>(AClass_Character::CharacterMovementComponentName))
 {
- 	
 	PrimaryActorTick.bCanEverTick = true;
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>("CameraComponent");
 	CameraComponent->SetupAttachment(GetRootComponent());
 	HealthComponent = CreateDefaultSubobject<UClass_HealthComponent>("HealthComponent");
 	WeaponComponent = CreateDefaultSubobject<UClass_WeaponComponent>("WeaponComponent");
-
 }
 
 void AClass_Character::BeginPlay()
@@ -41,32 +36,26 @@ void AClass_Character::BeginPlay()
 	HealthComponent->OnDeath.AddUObject(this, &AClass_Character::OnDeath);
 	HealthComponent->OnHealthChanged.AddUObject(this, &AClass_Character::OnHealthChanged);
 	LandedDelegate.AddDynamic(this, &AClass_Character::OnGroundLanded);
-	
 }
 
 void AClass_Character::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-
 }
 
 void AClass_Character::MoveForward(float Amount)
 {
-
 	IsMovingForward = Amount > 0.0f;
 	AddMovementInput(GetActorForwardVector(), Amount);
-	if (Amount > 0.0f)
-	{
-		PlayCameraShakeMove();
-	}
 
-	
+		if (Amount > 0.0f)
+			{
+				PlayCameraShakeMove();
+			}
 }
 
 void AClass_Character::MoveRight(float Amount)
 {
-	
 	AddMovementInput(GetActorRightVector(), Amount);
 }
 
@@ -110,13 +99,11 @@ void AClass_Character::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 	PlayerInputComponent->BindAction<FZoomInputSignature>("Zoom", IE_Pressed, WeaponComponent, &UClass_WeaponComponent::Zoom, true);
 	PlayerInputComponent->BindAction<FZoomInputSignature>("Zoom", IE_Released, WeaponComponent, &UClass_WeaponComponent::Zoom,false);
 
-
 }
 
 bool AClass_Character::IsRunning() const
 {
 	return WantsToRun && IsMovingForward && !GetVelocity().IsZero();
-	
 }
 
 float AClass_Character::GetMovementDirection() const
@@ -131,15 +118,14 @@ float AClass_Character::GetMovementDirection() const
 
 void AClass_Character::OnDeath() 
 {
-	//PlayAnimMontage(DeathAnimMontage);
-
 	GetCharacterMovement()->DisableMovement();
 	SetLifeSpan(LifeSpan);
 
-	if (Controller)
-	{
-		Controller->ChangeState(NAME_Spectating);
-	}
+		if (Controller)
+			{
+				Controller->ChangeState(NAME_Spectating);
+			}
+
 	GetCapsuleComponent()->SetCollisionResponseToChannels(ECollisionResponse::ECR_Ignore);
 
 	WeaponComponent->StopFire();
@@ -169,12 +155,11 @@ void AClass_Character::PlayCameraShakeMove()
 void AClass_Character::OnGroundLanded(const FHitResult& Hit)
 {
 	const auto FallVelosityZ = -GetCharacterMovement()->Velocity.Z;
-	//UE_LOG(CharacterLog, Display, TEXT("OnLanded: %f"), FallVelosityZ);
 
-	if (FallVelosityZ < LandedDamageVelosity.X) return;
+		if (FallVelosityZ < LandedDamageVelosity.X) return;
 
 	const auto FinalDamage = FMath::GetMappedRangeValueClamped(LandedDamageVelosity, LandedDamage, FallVelosityZ);
-	//UE_LOG(CharacterLog, Display, TEXT("FinalDamage: %f"), FinalDamage);
+	
 	TakeDamage(FinalDamage, FDamageEvent(), nullptr, nullptr);
 }
 
